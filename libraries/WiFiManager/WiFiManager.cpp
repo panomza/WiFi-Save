@@ -148,6 +148,7 @@ void WiFiManager::setupConfigPortal() {
   server->on(String(F("/0wifi")).c_str(), std::bind(&WiFiManager::handleWifi, this, false));
   server->on(String(F("/wifisave")).c_str(), std::bind(&WiFiManager::handleWifiSave, this));
   server->on(String(F("/i")).c_str(), std::bind(&WiFiManager::handleInfo, this));
+  server->on(String(F("/i/json")).c_str(), std::bind(&WiFiManager::handleInfoJson, this));
   server->on(String(F("/r")).c_str(), std::bind(&WiFiManager::handleReset, this));
   //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
   server->on(String(F("/fwlink")).c_str(), std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
@@ -650,6 +651,18 @@ void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("Sent wifi save page"));
 
   connect = true; //signal ready to connect/reset
+}
+
+void WiFiManager::handleInfoJson()
+{
+  DEBUG_WM(F("Info"));
+
+  String page;
+  page += ESP.getChipId();
+  server->sendHeader("Content-Length", String(page.length()));
+  server->send(200, "application/json", page);
+
+  DEBUG_WM(F("Sent info json"));
 }
 
 /** Handle the info page */
