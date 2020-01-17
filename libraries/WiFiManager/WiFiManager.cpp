@@ -143,15 +143,19 @@ void WiFiManager::setupConfigPortal() {
   dnsServer->start(DNS_PORT, "*", WiFi.softAPIP());
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
-  server->on(String(F("/")).c_str(), std::bind(&WiFiManager::handleRoot, this));
-  server->on(String(F("/wifi")).c_str(), std::bind(&WiFiManager::handleWifi, this, true));
-  server->on(String(F("/0wifi")).c_str(), std::bind(&WiFiManager::handleWifi, this, false));
+  // server->on(String(F("/")).c_str(), std::bind(&WiFiManager::handleRoot, this));
+  // server->on(String(F("/wifi")).c_str(), std::bind(&WiFiManager::handleWifi, this, true));
+  // server->on(String(F("/0wifi")).c_str(), std::bind(&WiFiManager::handleWifi, this, false));
   server->on(String(F("/wifisave")).c_str(), std::bind(&WiFiManager::handleWifiSave, this));
-  server->on(String(F("/i")).c_str(), std::bind(&WiFiManager::handleInfo, this));
-  server->on(String(F("/i/json")).c_str(), std::bind(&WiFiManager::handleInfoJson, this));
+  // server->on(String(F("/i")).c_str(), std::bind(&WiFiManager::handleInfo, this));
+  // server->on(String(F("/i/json")).c_str(), std::bind(&WiFiManager::handleInfoJson, this));
+
+  server->on(String(F("/chipID")).c_str(), std::bind(&WiFiManager::handleChipID, this));
   server->on(String(F("/rootCA")).c_str(), std::bind(&WiFiManager::handleRootCA, this));
   server->on(String(F("/cert")).c_str(), std::bind(&WiFiManager::handleCert, this));
   server->on(String(F("/privateKey")).c_str(), std::bind(&WiFiManager::handlePrivateKey, this));
+  server->on(String(F("/endpoint")).c_str(), std::bind(&WiFiManager::handleEndpoint, this));
+
   server->on(String(F("/r")).c_str(), std::bind(&WiFiManager::handleReset, this));
   //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
   server->on(String(F("/fwlink")).c_str(), std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
@@ -386,6 +390,9 @@ String WiFiManager::getPrivateKey(){
     return _privateKey;
 }
 
+String WiFiManager::getEndpoint(){
+  return _endpoint;
+}
 
 void WiFiManager::resetSettings() {
   DEBUG_WM(F("settings invalidated"));
@@ -681,6 +688,18 @@ void WiFiManager::handleInfoJson()
   DEBUG_WM(F("Sent info json"));
 }
 
+void WiFiManager::handleChipID()
+{
+  DEBUG_WM(F("chipID"));
+
+  String page;
+  page += ESP.getChipId();
+  server->sendHeader("Content-Length", String(page.length()));
+  server->send(200, "application/json", page);
+
+  DEBUG_WM(F("Sent chipID"));
+}
+
 void WiFiManager::handleRootCA()
 {
     DEBUG_WM(F("RootCA"));
@@ -691,8 +710,8 @@ void WiFiManager::handleRootCA()
     String page;
     page += "accept rootCA";
     page += "\n";
-    page += _rootCA;
-    page += "\n";
+    // page += _rootCA;
+    // page += "\n";
     page += "OK";
     server->sendHeader("Content-Length", String(page.length()));
     server->send(200, "application/json", page);
@@ -710,8 +729,8 @@ void WiFiManager::handleCert()
     String page;
     page += "accept cert";
     page += "\n";
-    page += _cert;
-    page += "\n";
+    // page += _cert;
+    // page += "\n";
     page += "OK";
     server->sendHeader("Content-Length", String(page.length()));
     server->send(200, "application/json", page);
@@ -729,13 +748,32 @@ void WiFiManager::handlePrivateKey()
     String page;
     page += "accept private key";
     page += "\n";
-    page += _privateKey;
-    page += "\n";
+    // page += _privateKey;
+    // page += "\n";
     page += "OK";
     server->sendHeader("Content-Length", String(page.length()));
     server->send(200, "application/json", page);
 
     DEBUG_WM(F("Sent private key page"));
+}
+
+void WiFiManager::handleEndpoint()
+{
+  DEBUG_WM(F("Endpoint"));
+  _endpoint = server->arg("endpoint").c_str();
+
+  DEBUG_WM(_endpoint);
+
+  String page;
+  page += "accept endpoint";
+  page += "\n";
+  // page += _endpoint;
+  // page += "\n";
+  page += "OK";
+  server->sendHeader("Content-Length", String(page.length()));
+  server->send(200, "application/json", page);
+
+  DEBUG_WM(F("Sent endpoint page"));
 }
 
 /** Handle the info page */

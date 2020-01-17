@@ -121,6 +121,7 @@ class WiFiManager
     String        getRootCA();
     String        getCert();
     String        getPrivateKey();
+    String        getEndpoint();
 
   private:
     std::unique_ptr<DNSServer>        dnsServer;
@@ -141,6 +142,7 @@ class WiFiManager
     String        _rootCA                 = "";
     String        _cert                   = "";
     String        _privateKey             = "";
+    String        _endpoint            = "";
     
     unsigned long _configPortalTimeout    = 0;
     unsigned long _connectTimeout         = 0;
@@ -173,9 +175,11 @@ class WiFiManager
     void          handleWifiSave();
     void          handleInfoJson();
     
+    void          handleChipID();
     void          handleRootCA();
     void          handleCert();
     void          handlePrivateKey();
+    void          handleEndpoint();
     
     void          handleInfo();
     void          handleReset();
