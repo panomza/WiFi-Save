@@ -29,6 +29,9 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   Serial.println("Entered config mode");
   Serial.println(WiFi.softAPIP());
   Serial.println(myWiFiManager->getConfigPortalSSID());
+
+  Serial.print("_rootCA: ");
+  Serial.println(myWiFiManager->getRootCA());
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,6 +113,7 @@ BLYNK_WRITE(V4) //Auto
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+WiFiManager wifiManager; 
 
 void setup()
 {
@@ -118,7 +122,6 @@ void setup()
 
   dht.begin();
   
-  WiFiManager wifiManager;  
   wifiManager.setAPCallback(configModeCallback);
   wifiManager.setConfigPortalTimeout(180);
   wifiManager.autoConnect("Air Purifier");
@@ -146,7 +149,26 @@ void setup()
 
 void loop()
 {
+//  Serial.println("Blynk run");
   Blynk.run();
+
+  String rootCA = wifiManager.getRootCA();
+  if(rootCA.length() > 0){
+    Serial.print("rootCA: ");
+    Serial.println(rootCA);
+  }
+
+  String cert = wifiManager.getCert();
+  if(cert.length() > 0){
+    Serial.print("cert: ");
+    Serial.println(cert);
+  }
+
+  String privateKey = wifiManager.getPrivateKey();
+  if(privateKey.length() > 0){
+    Serial.print("privateKey: ");
+    Serial.println(privateKey);
+  }
   
 //  receive_bord();
   
